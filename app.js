@@ -51,6 +51,7 @@ app.use(session({
 }));
 
 app.use((req,res,next)=> {
+  res.locals.title = res.locals.title || 'Movies App';
   res.locals.currentUser = req.session.user || null;
   next();
 });
