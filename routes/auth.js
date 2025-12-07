@@ -3,7 +3,7 @@ const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const router = express.Router();
 
-router.get('/register', (req,res)=> res.render('auth/register', { errors: [], data: {} }));
+router.get('/register', (req,res)=> res.render('auth/register', { errors: [], data: {}, title: 'Register' }));
 
 router.post('/register', [
   body('username').notEmpty().withMessage('Username required'),
@@ -13,10 +13,10 @@ router.post('/register', [
 ], async (req,res)=>{
   const errors = validationResult(req);
   const data = req.body;
-  if(!errors.isEmpty()) return res.status(422).render('auth/register', { errors: errors.array(), data });
+  if(!errors.isEmpty()) return res.status(422).render('auth/register', { errors: errors.array(), data, title: 'Register' });
   try{
     const existing = await User.findOne({ email: req.body.email });
-    if(existing) return res.status(422).render('auth/register', { errors: [{ msg: 'Email already in use' }], data });
+    if(existing) return res.status(422).render('auth/register', { errors: [{ msg: 'Email already in use' }], data, title: 'Register' });
     const passwordHash = await User.hashPassword(req.body.password);
     const user = await User.create({ username: req.body.username, email: req.body.email, passwordHash });
     req.session.user = { id: user._id.toString(), username: user.username };
@@ -24,7 +24,7 @@ router.post('/register', [
   }catch(err){ console.error(err); res.status(500).send('Server error'); }
 });
 
-router.get('/login', (req,res)=> res.render('auth/login', { errors: [], data: {} }));
+router.get('/login', (req,res)=> res.render('auth/login', { errors: [], data: {}, title: 'Login' }));
 
 router.post('/login', [
   body('email').isEmail().withMessage('Valid email required'),
@@ -32,12 +32,12 @@ router.post('/login', [
 ], async (req,res)=>{
   const errors = validationResult(req);
   const data = req.body;
-  if(!errors.isEmpty()) return res.status(422).render('auth/login', { errors: errors.array(), data });
+  if(!errors.isEmpty()) return res.status(422).render('auth/login', { errors: errors.array(), data, title: 'Login' });
   try{
     const user = await User.findOne({ email: req.body.email });
-    if(!user) return res.status(401).render('auth/login', { errors: [{ msg: 'Invalid credentials' }], data });
+    if(!user) return res.status(401).render('auth/login', { errors: [{ msg: 'Invalid credentials' }], data, title: 'Login' });
     const valid = await user.validatePassword(req.body.password);
-    if(!valid) return res.status(401).render('auth/login', { errors: [{ msg: 'Invalid credentials' }], data });
+    if(!valid) return res.status(401).render('auth/login', { errors: [{ msg: 'Invalid credentials' }], data, title: 'Login' });
     req.session.user = { id: user._id.toString(), username: user.username };
     res.redirect('/movies');
   }catch(e){ console.error(e); res.status(500).send('Server error'); }
