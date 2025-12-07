@@ -1,0 +1,45 @@
+<% layout('layout') -%>
+
+<h1>Edit Movie</h1>
+
+<% if (errors && errors.length) { %>
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      <% errors.forEach(e => { %><li><%= e.msg %></li><% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<form action="/movies/<%= data._id %>?_method=PUT" method="post" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label class="form-label">Name</label>
+    <input name="name" class="form-control" value="<%= data.name || '' %>"/>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Description</label>
+    <textarea name="description" class="form-control"><%= data.description || '' %></textarea>
+  </div>
+  <div class="row g-2">
+    <div class="col">
+      <label class="form-label">Year</label>
+      <input name="year" class="form-control" value="<%= data.year || '' %>"/>
+    </div>
+    <div class="col">
+      <label class="form-label">Rating</label>
+      <input name="rating" class="form-control" value="<%= data.rating || '' %>"/>
+    </div>
+  </div>
+  <div class="mb-3 mt-3">
+    <label class="form-label">Genres (comma separated)</label>
+    <input name="genres" class="form-control" value="<%= (data.genres||[]).join ? data.genres.join(', '): data.genres || '' %>"/>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Poster file</label>
+    <input type="file" name="poster" class="form-control"/>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Or Poster URL</label>
+    <input name="posterUrl" class="form-control" value="<%= data.posterUrl || '' %>"/>
+  </div>
+  <button class="btn btn-primary">Save</button>
+</form>
