@@ -1,0 +1,16 @@
+<% layout('layout') -%>
+
+<h1>Welcome, <%= user.username %>!</h1>
+
+<p>Your email: <%= user.email %></p>
+
+<h3 class="mt-4">Your Movies</h3>
+<% if (myMovies && myMovies.length) { %>
+  <ul>
+    <% myMovies.forEach(m => { %>
+      <li><a href="/movies/<%= m._id %>"><%= m.name %></a> (<%= m.year %>)</li>
+    <% }) %>
+  </ul>
+<% } else { %>
+  <p>You haven't added any movies yet.</p>
+<% } %>
