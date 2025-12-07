@@ -1,0 +1,3 @@
+body { padding-top: 1rem; background: linear-gradient(180deg,#f8fafc,#ffffff); }
+.card { border-radius: 12px; }
+.navbar-brand { font-weight: 700; letter-spacing: 0.5px; }
