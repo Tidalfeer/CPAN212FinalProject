@@ -38,11 +38,12 @@ router.get('/', async (req,res)=>{
     search,
     sort,
     currentPage: page,
-    totalPages: Math.ceil(count/limit)
+    totalPages: Math.ceil(count/limit),
+    title: 'Movies'
   });
 });
 
-router.get('/add', requireLogin, (req,res)=> res.render('movies/add', { errors: [], data: {} }));
+router.get('/add', requireLogin, (req,res)=> res.render('movies/add', { errors: [], data: {}, title: 'Add Movie' }));
 
 router.post('/add', requireLogin, upload.single('poster'), [
   body('name').notEmpty().withMessage('Name required'),
@@ -51,7 +52,7 @@ router.post('/add', requireLogin, upload.single('poster'), [
 ], async (req,res)=>{
   const errors = validationResult(req);
   const data = req.body;
-  if(!errors.isEmpty()) return res.status(422).render('movies/add', { errors: errors.array(), data });
+  if(!errors.isEmpty()) return res.status(422).render('movies/add', { errors: errors.array(), data, title: 'Add Movie' });
   const genres = (req.body.genres || '').split(',').map(s => s.trim()).filter(Boolean);
   try{
     const movie = await Movie.create({
@@ -70,11 +71,11 @@ router.post('/add', requireLogin, upload.single('poster'), [
 router.get('/:id', async (req,res)=>{
   const movie = await Movie.findById(req.params.id).populate('owner','username');
   if(!movie) return res.status(404).send('Not found');
-  res.render('movies/details', { movie });
+  res.render('movies/details', { movie, title: movie.name });
 });
 
 router.get('/:id/edit', requireLogin, requireOwner, (req,res)=>{
-  res.render('movies/edit', { errors: [], data: req.movie });
+  res.render('movies/edit', { errors: [], data: req.movie, title: 'Edit: ' + req.movie.name });
 });
 
 router.put('/:id', requireLogin, requireOwner, upload.single('poster'), [
@@ -83,7 +84,7 @@ router.put('/:id', requireLogin, requireOwner, upload.single('poster'), [
   body('year').isInt({ min: 1888 }).withMessage('Enter valid year'),
 ], async (req,res)=>{
   const errors = validationResult(req);
-  if(!errors.isEmpty()) return res.status(422).render('movies/edit', { errors: errors.array(), data: { ...req.body, _id:req.params.id } });
+  if(!errors.isEmpty()) return res.status(422).render('movies/edit', { errors: errors.array(), data: { ...req.body, _id:req.params.id }, title: 'Edit Movie' });
   const genres = (req.body.genres || '').split(',').map(s => s.trim()).filter(Boolean);
   try{
     await Movie.findByIdAndUpdate(req.params.id, {
