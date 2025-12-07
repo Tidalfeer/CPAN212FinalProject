@@ -9,7 +9,26 @@ const path = require('path');
 const app = express();
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/movies';
-mongoose.connect(MONGODB_URI).then(()=> console.log('MongoDB connected')).catch(e=>console.error(e));
+mongoose.connect(MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  ssl: true,
+  tlsAllowInvalidCertificates: false
+})
+.then(()=> console.log('MongoDB connected'))
+.catch(e=> {
+  console.error('MongoDB connection error:', e.message);
+  console.log('Trying without SSL...');
+  
+  // Try without SSL as fallback
+  mongoose.connect(MONGODB_URI.replace('mongodb+srv://', 'mongodb://'), {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    ssl: false
+  })
+  .then(() => console.log('MongoDB connected without SSL'))
+  .catch(err => console.error('Fallback also failed:', err.message));
+});
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
