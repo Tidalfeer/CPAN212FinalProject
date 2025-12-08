@@ -52,10 +52,10 @@ router.post('/logout', (req,res)=>{
 
 router.get('/profile', requireLogin, async (req, res) => {
   try {
-    // Get current user's data
+    
     const user = await User.findById(req.session.user.id);
     
-    // Get movies created by this user
+    
     const Movie = require('../models/Movie');
     const userMovies = await Movie.find({ owner: req.session.user.id });
     
