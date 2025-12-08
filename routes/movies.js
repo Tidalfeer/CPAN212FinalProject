@@ -71,7 +71,17 @@ router.post('/add', requireLogin, upload.single('poster'), [
 router.get('/:id', async (req,res)=>{
   const movie = await Movie.findById(req.params.id).populate('owner','username');
   if(!movie) return res.status(404).send('Not found');
-  res.render('movies/details', { movie, title: movie.name });
+ if (!movie.comments) movie.comments = [];
+    if (!movie.likes) movie.likes = 0;
+    
+    res.render('movies/details', { 
+      movie,
+      title: movie.name 
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
 });
 
 router.get('/:id/edit', requireLogin, requireOwner, (req,res)=>{
