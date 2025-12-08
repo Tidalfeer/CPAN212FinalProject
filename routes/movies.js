@@ -106,16 +106,53 @@ router.delete('/:id', requireLogin, requireOwner, async (req,res)=>{
   }catch(e){ console.error(e); res.status(500).send('Server error'); }
 });
 
-router.post('/:id/like', requireLogin, async (req,res)=>{
-  await Movie.findByIdAndUpdate(req.params.id, { $inc: { likes: 1 } });
+router.post('/:id/like', requireLogin, async (req, res) => {
+  try {
+    const movie = await Movie.findById(req.params.id);
+    if (!movie) return res.status(404).send('Movie not found');
+    
+    if (!movie.likes) {
+      movie.likes = 0;
+    }
+    
+    movie.likes += 1;
+    await movie.save();
+    res.redirect('/movies/' + req.params.id);
+  } catch (error) {
+    console.error('Like error:', error);
+    res.redirect('/movies/' + req.params.id);
+  }
+});
+
+router.post('/:id/comment', requireLogin, async (req, res) => {
+  try {
+    const movie = await Movie.findById(req.params.id);
+    if (!movie) return res.status(404).send('Movie not found');
+    
+    if (!req.body.comment || req.body.comment.trim() === '') {
+      return res.redirect('/movies/' + req.params.id);
+    }
+    
+    if (!movie.comments) {
+      movie.comments = [];
+    }
+    
+    movie.comments.push({
+      user: req.session.user.username,
+      text: req.body.comment.trim()
+    });
+    
+    await movie.save();
+    res.redirect('/movies/' + req.params.id);
+  } catch (error) {
+    console.error('Comment error:', error);
+    res.redirect('/movies/' + req.params.id);
+  }
+});
+
+router.get('/:id/comment', (req, res) => {
   res.redirect('/movies/' + req.params.id);
 });
 
-router.post('/:id/comment', requireLogin, async (req,res)=>{
-  const movie = await Movie.findById(req.params.id);
-  movie.comments.push({ user: req.session.user.username, text: req.body.comment });
-  await movie.save();
-  res.redirect('/movies/' + req.params.id);
-});
 
 module.exports = router;
