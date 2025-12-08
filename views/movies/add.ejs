@@ -6,11 +6,20 @@
   <div class="alert alert-danger">
     <ul class="mb-0">
       <% errors.forEach(e => { %>
-        <li><%= e.msg || e %></li>
+        <li>
+          <% if (typeof e === 'string') { %>
+            <%= e %>
+          <% } else if (e.msg) { %>
+            <%= e.msg %>
+          <% } else { %>
+            <%= JSON.stringify(e) %>
+          <% } %>
+        </li>
       <% }) %>
     </ul>
   </div>
 <% } %>
+
 
 
 <form action="/movies/add" method="post" enctype="multipart/form-data">
