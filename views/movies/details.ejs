@@ -25,18 +25,31 @@
     <% } %>
 
     <hr/>
-    <h4>Comments</h4>
-    <form action="/movies/<%= movie._id %>/comment" method="post">
-      <div class="mb-2">
-        <textarea name="comment" class="form-control" required></textarea>
-      </div>
-      <button class="btn btn-primary">Add Comment</button>
-    </form>
+    <h4>Comments (<%= (movie.comments||[]).length %>)</h4>
 
-    <ul class="mt-3 list-group">
-      <% (movie.comments||[]).forEach(c => { %>
-        <li class="list-group-item"><strong><%= c.user %></strong>: <%= c.text %></li>
-      <% }) %>
-    </ul>
-  </div>
-</div>
+<% if (currentUser) { %>
+  <form action="/movies/<%= movie._id %>/comment" method="post" class="mb-4">
+    <div class="mb-2">
+      <textarea name="comment" class="form-control" placeholder="Write a comment..." required rows="3"></textarea>
+    </div>
+    <button class="btn btn-primary">Add Comment</button>
+  </form>
+<% } else { %>
+  <p><a href="/login">Log in</a> to add a comment</p>
+<% } %>
+
+<% if (movie.comments && movie.comments.length > 0) { %>
+  <ul class="list-group">
+    <% movie.comments.forEach(c => { %>
+      <li class="list-group-item">
+        <strong><%= c.user %></strong>
+        <% if (c.date) { %>
+          <small class="text-muted ms-2"><%= new Date(c.date).toLocaleDateString() %></small>
+        <% } %>
+        <p class="mb-0 mt-1"><%= c.text %></p>
+      </li>
+    <% }) %>
+  </ul>
+<% } else { %>
+  <p class="text-muted">No comments yet. Be the first to comment!</p>
+<% } %>
