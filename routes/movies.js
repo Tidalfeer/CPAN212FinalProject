@@ -43,7 +43,9 @@ router.get('/', async (req,res)=>{
   });
 });
 
-router.get('/add', requireLogin, (req,res)=> res.render('movies/add', { errors: [], data: {}, title: 'Add Movie' }));
+router.get('/add', requireLogin, (req,res)=> {
+  res.render('movies/add', { errors: [], data: {}, title: 'Add Movie' });
+});
 
 router.post('/add', requireLogin, upload.single('poster'), [
   body('name').notEmpty().withMessage('Name required'),
@@ -52,7 +54,13 @@ router.post('/add', requireLogin, upload.single('poster'), [
 ], async (req,res)=>{
   const errors = validationResult(req);
   const data = req.body;
-  if(!errors.isEmpty()) return res.status(422).render('movies/add', { errors: errors.array(), data, title: 'Add Movie' });
+  if(!errors.isEmpty()) {
+    return res.status(422).render('movies/add', { 
+      errors: errors.array(), 
+      data, 
+      title: 'Add Movie' 
+    });
+  }
   const genres = (req.body.genres || '').split(',').map(s => s.trim()).filter(Boolean);
   try{
     const movie = await Movie.create({
@@ -65,36 +73,42 @@ router.post('/add', requireLogin, upload.single('poster'), [
       owner: req.session.user.id
     });
     res.redirect('/movies/' + movie._id);
-  }catch(e){ console.error(e); res.status(500).send('Server error'); }
+  }catch(e){ 
+    console.error(e); 
+    res.status(500).send('Server error'); 
+  }
 });
 
 router.get('/:id', async (req,res)=>{
   const movie = await Movie.findById(req.params.id).populate('owner','username');
   if(!movie) return res.status(404).send('Not found');
- if (!movie.comments) movie.comments = [];
-    if (!movie.likes) movie.likes = 0;
-    
-    res.render('movies/details', { 
-      movie,
-      title: movie.name 
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Server error');
-  }
+  res.render('movies/details', { 
+    movie, 
+    title: movie.name 
+  });
 });
 
 router.get('/:id/edit', requireLogin, requireOwner, (req,res)=>{
-  res.render('movies/edit', { errors: [], data: req.movie, title: 'Edit: ' + req.movie.name });
+  res.render('movies/edit', { 
+    errors: [], 
+    data: req.movie, 
+    title: 'Edit: ' + req.movie.name 
+  });
 });
 
 router.put('/:id', requireLogin, requireOwner, upload.single('poster'), [
   body('name').notEmpty().withMessage('Name required'),
   body('description').isLength({ min: 10 }).withMessage('Description min 10 chars'),
-  body('year').isInt({ min: 1888 }).withMessage('Enter valid year'),
+  body('year').isInt({ min: 1888 }).withMessage('Enter valid year')
 ], async (req,res)=>{
   const errors = validationResult(req);
-  if(!errors.isEmpty()) return res.status(422).render('movies/edit', { errors: errors.array(), data: { ...req.body, _id:req.params.id }, title: 'Edit Movie' });
+  if(!errors.isEmpty()) {
+    return res.status(422).render('movies/edit', { 
+      errors: errors.array(), 
+      data: { ...req.body, _id: req.params.id }, 
+      title: 'Edit Movie' 
+    });
+  }
   const genres = (req.body.genres || '').split(',').map(s => s.trim()).filter(Boolean);
   try{
     await Movie.findByIdAndUpdate(req.params.id, {
@@ -106,56 +120,43 @@ router.put('/:id', requireLogin, requireOwner, upload.single('poster'), [
       posterUrl: req.file ? req.file.path : req.body.posterUrl || ''
     });
     res.redirect('/movies/' + req.params.id);
-  }catch(e){ console.error(e); res.status(500).send('Server error'); }
+  }catch(e){ 
+    console.error(e); 
+    res.status(500).send('Server error'); 
+  }
 });
 
 router.delete('/:id', requireLogin, requireOwner, async (req,res)=>{
   try{
     await Movie.findByIdAndDelete(req.params.id);
     res.redirect('/movies');
-  }catch(e){ console.error(e); res.status(500).send('Server error'); }
+  }catch(e){ 
+    console.error(e); 
+    res.status(500).send('Server error'); 
+  }
 });
 
-router.post('/:id/like', requireLogin, async (req, res) => {
+router.post('/:id/like', requireLogin, async (req,res)=>{
   try {
-    const movie = await Movie.findById(req.params.id);
-    if (!movie) return res.status(404).send('Movie not found');
-    
-    if (!movie.likes) {
-      movie.likes = 0;
-    }
-    
-    movie.likes += 1;
-    await movie.save();
+    await Movie.findByIdAndUpdate(req.params.id, { $inc: { likes: 1 } });
     res.redirect('/movies/' + req.params.id);
-  } catch (error) {
-    console.error('Like error:', error);
+  } catch(e) {
+    console.error(e);
     res.redirect('/movies/' + req.params.id);
   }
 });
 
-router.post('/:id/comment', requireLogin, async (req, res) => {
+router.post('/:id/comment', requireLogin, async (req,res)=>{
   try {
     const movie = await Movie.findById(req.params.id);
-    if (!movie) return res.status(404).send('Movie not found');
-    
-    if (!req.body.comment || req.body.comment.trim() === '') {
-      return res.redirect('/movies/' + req.params.id);
-    }
-    
-    if (!movie.comments) {
-      movie.comments = [];
-    }
-    
-    movie.comments.push({
-      user: req.session.user.username,
-      text: req.body.comment.trim()
+    movie.comments.push({ 
+      user: req.session.user.username, 
+      text: req.body.comment 
     });
-    
     await movie.save();
     res.redirect('/movies/' + req.params.id);
-  } catch (error) {
-    console.error('Comment error:', error);
+  } catch(e) {
+    console.error(e);
     res.redirect('/movies/' + req.params.id);
   }
 });
@@ -163,6 +164,5 @@ router.post('/:id/comment', requireLogin, async (req, res) => {
 router.get('/:id/comment', (req, res) => {
   res.redirect('/movies/' + req.params.id);
 });
-
 
 module.exports = router;
