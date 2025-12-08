@@ -1,16 +1,40 @@
-
-
-<h1>Welcome, <%= user.username %>!</h1>
-
-<p>Your email: <%= user.email %></p>
-
-<h3 class="mt-4">Your Movies</h3>
-<% if (myMovies && myMovies.length) { %>
-  <ul>
-    <% myMovies.forEach(m => { %>
-      <li><a href="/movies/<%= m._id %>"><%= m.name %></a> (<%= m.year %>)</li>
-    <% }) %>
-  </ul>
-<% } else { %>
-  <p>You haven't added any movies yet.</p>
-<% } %>
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body text-center">
+          <h3 class="card-title"><%= user.username %></h3>
+          <p class="text-muted"><%= user.email %></p>
+          <p class="mt-3">
+            <strong><%= movies.length %></strong> movies added
+          </p>
+          <a href="/movies/add" class="btn btn-primary mt-2">Add New Movie</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-8">
+      <h3>My Movies</h3>
+      
+      <% if (movies.length > 0) { %>
+        <div class="list-group">
+          <% movies.forEach(movie => { %>
+            <a href="/movies/<%= movie._id %>" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1"><%= movie.name %> (<%= movie.year %>)</h5>
+                <small>Rating: <%= movie.rating || 'N/A' %></small>
+              </div>
+              <p class="mb-1"><%= movie.description.substring(0, 100) %>...</p>
+              <small>Genres: <%= (movie.genres || []).join(', ') %></small>
+            </a>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="alert alert-info">
+          <p>You haven't added any movies yet.</p>
+          <a href="/movies/add" class="btn btn-primary">Add Your First Movie</a>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
