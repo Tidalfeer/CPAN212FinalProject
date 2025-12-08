@@ -5,10 +5,13 @@
 <% if (errors && errors.length) { %>
   <div class="alert alert-danger">
     <ul class="mb-0">
-      <% errors.forEach(e => { %><li><%= e.msg %></li><% }) %>
+      <% errors.forEach(e => { %>
+        <li><%= e.msg || e %></li>
+      <% }) %>
     </ul>
   </div>
 <% } %>
+
 
 <form action="/movies/add" method="post" enctype="multipart/form-data">
   <div class="mb-3">
